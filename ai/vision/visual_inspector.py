@@ -36,4 +36,43 @@ class VisualInspector:
         except Exception as e:
             return {"status": "ERROR", "message": f"Image analysis failed: {e}"}
 
+    def inspect_neural(self, image_path: Path, prompt: str = None) -> Dict[str, Any]:
+        """Send base64-encoded render to multimodal model in LM Studio for semantic scene evaluation."""
+        import base64
+        import io
+        from ai.models.lm_studio_client import LMStudioClient
+        from ai.models.model_manager import model_manager
+
+        if not image_path.exists():
+            return {"available": False, "error": f"Image not found: {image_path}"}
+
+        try:
+            with Image.open(image_path) as img:
+                img_rgb = img.convert("RGB")
+                img_rgb.thumbnail((512, 512))
+                buf = io.BytesIO()
+                img_rgb.save(buf, format="JPEG", quality=85)
+                b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+
+            client = LMStudioClient(timeout=90.0)
+            if not client.check_health():
+                return {"available": False, "reason": "LM Studio offline"}
+
+            p = prompt or "Analyze this 3D render. Describe the geometry, materials, and lighting quality."
+            messages = [{
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": p},
+                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64}"}}
+                ]
+            }]
+            active_m = model_manager.discover_active_model()
+            res = client.chat_completion(messages=messages, model=active_m, temperature=0.2)
+            content = res.get("choices", [{}])[0].get("message", {}).get("content")
+            if content:
+                return {"available": True, "model": active_m, "analysis": content}
+            return {"available": False, "response": res}
+        except Exception as e:
+            return {"available": False, "error": str(e)}
+
 visual_inspector = VisualInspector()

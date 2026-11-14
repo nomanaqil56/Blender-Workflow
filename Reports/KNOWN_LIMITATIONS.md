@@ -12,3 +12,10 @@
 
 ## 4. Multi-Material glTF Submesh Boundaries
 - **glTF Boundary Vertices**: Exporting meshes with multiple materials to standard glTF/GLB splits vertices along material boundaries. Re-importing into Blender may report open edges unless `bmesh.ops.remove_doubles(dist=0.001)` is applied across shared boundaries.
+
+## 5. Vision Inference Latency & Context Sizing
+- **Multimodal Token Latency**: Performing multimodal base64 image projection on `Qwen3.5-9B` via LM Studio requires 30-50 seconds per frame on an 8GB laptop GPU. Client socket timeouts for vision inference should be configured to at least 90 seconds to prevent premature HTTP read timeouts.
+- **Model Specialization**: `Qwen2.5-Coder-7B` is optimized for rapid tool planning, code execution, and parameter formatting (2-3 seconds per plan), whereas `Qwen3.5-9B` is utilized for visual evaluation and inspection.
+
+## 6. Destructive Modeling vs. Modifier Stack
+- **Mesh Topology Preservation**: Applying permanent in-place polygon subdivision destroys the original polygon degree (converting pentagons and hexagons into quads). For production assets requiring semantic topology audits, procedural modifier stacks (`SUBSURF`, `BEVEL`, `CAST`) and object-level metadata should be favored over permanent destructive mesh subdivision.

@@ -26,6 +26,7 @@ def init_tool_map():
             "inspect_object": scene_tools.inspect_object,
             "create_object": object_tools.create_object,
             "delete_object": object_tools.delete_object,
+            "clear_scene": object_tools.clear_scene,
             "select_object": object_tools.select_object,
             "transform_object": object_tools.transform_object,
             "duplicate_object": object_tools.duplicate_object,

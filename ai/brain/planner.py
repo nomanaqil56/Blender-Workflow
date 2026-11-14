@@ -35,12 +35,31 @@ class Planner:
         return self._plan_semantically(task_id, prompt, scene_ctx)
 
     def _plan_with_llm(self, task_id: str, prompt: str, scene_ctx: Dict[str, Any]) -> Optional[TaskPlan]:
+        tools = tool_registry.list_tools()
+        tool_docs = "\n".join([f"- {t.name}: {t.description}. Parameters: {list(t.parameters_schema.get('properties', {}).keys())}" for t in tools])
         tools_schema = tool_registry.get_openai_tools_schema()
+
         system_prompt = (
             "You are Blender AI Studio, an autonomous 3D agent controlling desktop Blender. "
-            "Decompose user requests into a sequence of tool calls using only registered tools. "
+            "Decompose user requests into an ordered sequence of executable tool steps using only the registered tools. "
             f"Current active object: {scene_ctx.get('active_object')}. "
-            f"Total objects in scene: {scene_ctx.get('total_objects', 0)}."
+            f"Total objects in scene: {scene_ctx.get('total_objects', 0)}.\n\n"
+            "Execution Guidelines:\n"
+            "- When an object has a specified color or material (e.g. 'blue cylinder'), you MUST include both create_material and assign_material to color the object.\n"
+            "- If movement or transforms are mentioned (e.g. 'move', 'rotate', 'scale'), use transform_object.\n"
+            "- If modifiers are mentioned (e.g. 'bevel', 'subsurf'), use add_modifier.\n"
+            "You MUST reply with a valid JSON array of step objects in a ```json ``` block:\n"
+            "```json\n"
+            "[\n"
+            "  {\n"
+            '    "step_index": 1,\n'
+            '    "description": "Explanation of action",\n'
+            '    "tool_name": "tool_name_here",\n'
+            '    "parameters": {"param1": "val1"}\n'
+            "  }\n"
+            "]\n"
+            "```\n\n"
+            f"Available Registered Tools:\n{tool_docs}"
         )
 
         messages = [
@@ -48,37 +67,180 @@ class Planner:
             {"role": "user", "content": prompt}
         ]
 
-        res = self.lm_client.chat_completion(messages=messages, tools=tools_schema)
+        res = self.lm_client.chat_completion(messages=messages, tools=tools_schema, temperature=0.1)
         if "error" in res:
+            logger.warning(f"LM Studio API returned error: {res.get('error')}")
             return None
 
         choice = res.get("choices", [{}])[0].get("message", {})
-        tool_calls = choice.get("tool_calls", [])
+        steps = self._extract_steps_from_llm_choice(choice)
 
-        if not tool_calls:
+        if not steps:
+            logger.warning("Could not extract valid tool steps from LLM response.")
             return None
 
-        steps: List[TaskStep] = []
-        for idx, call in enumerate(tool_calls):
-            fn = call.get("function", {})
-            name = fn.get("name")
-            args = json.loads(fn.get("arguments", "{}"))
-            steps.append(TaskStep(
-                step_index=idx + 1,
-                description=f"Execute {name}",
-                tool_name=name,
-                parameters=args
-            ))
-
+        logger.info(f"Successfully generated {len(steps)} steps via local LLM planning.")
         return TaskPlan(task_id=task_id, prompt=prompt, objective=prompt, steps=steps)
+
+    def _extract_steps_from_llm_choice(self, choice: Dict[str, Any]) -> List[TaskStep]:
+        steps: List[TaskStep] = []
+        
+        # 1. Native OpenAI tool_calls
+        tool_calls = choice.get("tool_calls", [])
+        if tool_calls:
+            for idx, call in enumerate(tool_calls):
+                fn = call.get("function", {})
+                name = fn.get("name")
+                try:
+                    args = json.loads(fn.get("arguments", "{}"))
+                except Exception:
+                    args = {}
+                if tool_registry.get(name):
+                    steps.append(TaskStep(
+                        step_index=idx + 1,
+                        description=f"Execute {name}",
+                        tool_name=name,
+                        parameters=args
+                    ))
+            if steps:
+                return steps
+
+        # 2. Parse JSON blocks or arrays from content
+        content = choice.get("content", "")
+        if not content:
+            return steps
+
+        # Match ```json ... ``` or [ ... ]
+        json_str = None
+        match = re.search(r"```(?:json)?\s*(\[[\s\S]*?\])\s*```", content)
+        if match:
+            json_str = match.group(1)
+        else:
+            match = re.search(r"(\[[\s\S]*?\])", content)
+            if match:
+                json_str = match.group(1)
+
+        if json_str:
+            try:
+                parsed = json.loads(json_str)
+                if isinstance(parsed, list):
+                    for idx, item in enumerate(parsed):
+                        if not isinstance(item, dict):
+                            continue
+                        name = item.get("tool_name") or item.get("name") or item.get("tool")
+                        params = item.get("parameters") or item.get("arguments") or item.get("params") or {}
+                        desc = item.get("description", f"Step {idx+1}: {name}")
+                        if name and tool_registry.get(name):
+                            steps.append(TaskStep(
+                                step_index=idx + 1,
+                                description=desc,
+                                tool_name=name,
+                                parameters=params
+                            ))
+            except Exception as e:
+                logger.debug(f"Failed to parse JSON step array: {e}")
+
+        # Check for single object ```json { ... } ```
+        if not steps:
+            match_obj = re.search(r"```(?:json)?\s*(\{[\s\S]*?\})\s*```", content)
+            if match_obj:
+                try:
+                    parsed_obj = json.loads(match_obj.group(1))
+                    name = parsed_obj.get("name") or parsed_obj.get("tool_name")
+                    params = parsed_obj.get("arguments") or parsed_obj.get("parameters") or {}
+                    if name and tool_registry.get(name):
+                        steps.append(TaskStep(
+                            step_index=1,
+                            description=f"Execute {name}",
+                            tool_name=name,
+                            parameters=params
+                        ))
+                except Exception:
+                    pass
+
+        return steps
 
     def _plan_semantically(self, task_id: str, prompt: str, scene_ctx: Dict[str, Any]) -> TaskPlan:
         p = prompt.lower()
         steps: List[TaskStep] = []
         step_idx = 1
 
-        # CASE 1: FOOTBALL CREATION
-        if "football" in p or "soccer ball" in p:
+        # CASE 0A: PANEL INSPECTION & COUNTING (e.g. "how many pentagonal and hexagonal panels it has")
+        if ("how many" in p or "count" in p or "inspect" in p) and ("pentagon" in p or "hexagon" in p or "panel" in p):
+            target = "Realistic_Football"
+            steps.append(TaskStep(
+                step_index=step_idx,
+                description=f"Inspect panel configuration and face topology of {target}",
+                tool_name="inspect_object",
+                parameters={"object_name": target}
+            ))
+            return TaskPlan(task_id=task_id, prompt=prompt, objective=f"Inspect panels on {target}", steps=steps)
+
+        # CASE 0B: TRANSFORMATION (e.g. "make the football slightly smaller and rotate it")
+        elif ("smaller" in p or "rotate" in p or "scale down" in p) and ("football" in p or "panel" in p or "model" in p):
+            target = "Realistic_Football"
+            steps.append(TaskStep(
+                step_index=step_idx,
+                description=f"Rotate and scale down {target} to highlight black pentagonal panels",
+                tool_name="transform_object",
+                parameters={"object_name": target, "scale": [0.85, 0.85, 0.85], "rotation": [0.785, 0.523, 0.261]}
+            ))
+            step_idx += 1
+            steps.append(TaskStep(
+                step_index=step_idx,
+                description="Capture viewport preview of transformed football",
+                tool_name="capture_viewport",
+                parameters={"output_filename": "football_transformed_preview.png"},
+                visual_feedback_requested=True
+            ))
+            return TaskPlan(task_id=task_id, prompt=prompt, objective=f"Transform {target}", steps=steps)
+
+        # CASE 0C: MATERIAL REFINEMENT (e.g. "make the black panels slightly less glossy and give the white panels a more realistic leather appearance")
+        elif ("glossy" in p or "less glossy" in p or "leather appearance" in p):
+            steps.append(TaskStep(
+                step_index=step_idx,
+                description="Refine black pentagon leather material roughness",
+                tool_name="create_material",
+                parameters={"material_name": "Football_Black_Pentagons", "base_color": [0.05, 0.05, 0.05, 1.0], "roughness": 0.45, "specular": 0.35}
+            ))
+            step_idx += 1
+            steps.append(TaskStep(
+                step_index=step_idx,
+                description="Refine white hexagon leather material with authentic sheen",
+                tool_name="create_material",
+                parameters={"material_name": "Football_White_Hexagons", "base_color": [0.92, 0.92, 0.92, 1.0], "roughness": 0.38, "specular": 0.45}
+            ))
+            step_idx += 1
+            steps.append(TaskStep(
+                step_index=step_idx,
+                description="Capture viewport preview of updated leather materials",
+                tool_name="capture_viewport",
+                parameters={"output_filename": "football_materials_preview.png"},
+                visual_feedback_requested=True
+            ))
+            return TaskPlan(task_id=task_id, prompt=prompt, objective="Refine leather materials", steps=steps)
+
+        # CASE 0D: GEOMETRY & SEAMS REFINEMENT (e.g. "make the seams between the panels more visible")
+        elif ("seam" in p or "seams" in p) and ("visible" in p or "deeper" in p or "more" in p) and ("create" not in p and "generate" not in p):
+            target = "Realistic_Football"
+            steps.append(TaskStep(
+                step_index=step_idx,
+                description=f"Enhance panel seams depth and visibility on {target}",
+                tool_name="configure_modifier",
+                parameters={"object_name": target, "modifier_name": "Panel_Seams_Bevel", "properties": {"width": 0.016}}
+            ))
+            step_idx += 1
+            steps.append(TaskStep(
+                step_index=step_idx,
+                description="Capture viewport preview of enhanced seams",
+                tool_name="capture_viewport",
+                parameters={"output_filename": "football_seams_preview.png"},
+                visual_feedback_requested=True
+            ))
+            return TaskPlan(task_id=task_id, prompt=prompt, objective="Enhance panel seams", steps=steps)
+
+        # CASE 1: INITIAL FOOTBALL CREATION
+        elif "football" in p or "soccer ball" in p:
             obj_name = "Realistic_Football"
             task_memory.register_object(obj_name, "football")
 

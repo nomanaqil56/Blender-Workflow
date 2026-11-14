@@ -24,12 +24,14 @@ class VisionManager:
             return metrics
 
         evaluation = self.evaluator.evaluate(metrics)
+        neural_feedback = self.inspector.inspect_neural(img_path)
 
         return {
             "status": "SUCCESS",
             "image_path": str(img_path),
             "metrics": metrics,
-            "evaluation": evaluation
+            "evaluation": evaluation,
+            "neural_feedback": neural_feedback
         }
 
 vision_manager = VisionManager()

@@ -60,6 +60,24 @@ def delete_object(object_name: str, confirm: bool = False, **kwargs) -> Dict[str
 
     return {"status": "SUCCESS", "deleted": object_name}
 
+def clear_scene(confirm: bool = False, **kwargs) -> Dict[str, Any]:
+    """Remove all objects from the current scene."""
+    if not confirm:
+        return {"status": "ERROR", "message": "confirm=True required to clear scene."}
+
+    deleted_count = 0
+    for obj in list(bpy.context.scene.objects):
+        mesh_data = obj.data if obj.type == 'MESH' else None
+        bpy.data.objects.remove(obj, do_unlink=True)
+        if mesh_data and mesh_data.users == 0:
+            try:
+                bpy.data.meshes.remove(mesh_data)
+            except Exception:
+                pass
+        deleted_count += 1
+
+    return {"status": "SUCCESS", "deleted_objects_count": deleted_count}
+
 def select_object(object_name: str, **kwargs) -> Dict[str, Any]:
     """Select an object and make it active."""
     obj = bpy.data.objects.get(object_name)

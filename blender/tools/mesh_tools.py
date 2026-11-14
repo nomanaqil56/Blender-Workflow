@@ -65,7 +65,72 @@ def create_truncated_icosahedron(name: str = "Realistic_Football", radius: float
     faces = [[v.index for v in f.verts] for f in bm.faces]
     bm.free()
 
-    return create_mesh(name=name, vertices=verts, faces=faces)
+    result = create_mesh(name=name, vertices=verts, faces=faces)
+    obj = bpy.data.objects.get(result["object_name"])
+    if obj and obj.data:
+        # Create professional PBR leather materials
+        mat_white = bpy.data.materials.get("Football_White_Hexagons")
+        if not mat_white:
+            mat_white = bpy.data.materials.new(name="Football_White_Hexagons")
+            mat_white.use_nodes = True
+            bsdf = mat_white.node_tree.nodes.get("Principled BSDF")
+            if bsdf:
+                bsdf.inputs['Base Color'].default_value = (0.92, 0.92, 0.92, 1.0)
+                bsdf.inputs['Roughness'].default_value = 0.35
+
+        mat_black = bpy.data.materials.get("Football_Black_Pentagons")
+        if not mat_black:
+            mat_black = bpy.data.materials.new(name="Football_Black_Pentagons")
+            mat_black.use_nodes = True
+            bsdf = mat_black.node_tree.nodes.get("Principled BSDF")
+            if bsdf:
+                bsdf.inputs['Base Color'].default_value = (0.05, 0.05, 0.05, 1.0)
+                bsdf.inputs['Roughness'].default_value = 0.30
+
+        if mat_white.name not in [m.name for m in obj.data.materials if m]:
+            obj.data.materials.append(mat_white)
+        if mat_black.name not in [m.name for m in obj.data.materials if m]:
+            obj.data.materials.append(mat_black)
+
+        pentagons = 0
+        hexagons = 0
+        for poly in obj.data.polygons:
+            if len(poly.vertices) == 5:
+                poly.material_index = 1
+                pentagons += 1
+            else:
+                poly.material_index = 0
+                hexagons += 1
+
+        # Smooth shading
+        for f in obj.data.polygons:
+            f.use_smooth = True
+
+        # Seams and spherical inflation modifiers
+        if "Panel_Seams_Bevel" not in [m.name for m in obj.modifiers]:
+            mod_bevel = obj.modifiers.new(name="Panel_Seams_Bevel", type='BEVEL')
+            mod_bevel.width = 0.008
+            mod_bevel.segments = 2
+            mod_bevel.profile = 0.7
+
+        if "Surface_Smoothness" not in [m.name for m in obj.modifiers]:
+            mod_sub = obj.modifiers.new(name="Surface_Smoothness", type='SUBSURF')
+            mod_sub.levels = 2
+            mod_sub.render_levels = 2
+
+        if "Spherical_Inflation" not in [m.name for m in obj.modifiers]:
+            mod_cast = obj.modifiers.new(name="Spherical_Inflation", type='CAST')
+            mod_cast.factor = 0.12
+
+        obj["pentagons_count"] = pentagons
+        obj["hexagons_count"] = hexagons
+        obj["base_panels"] = 32
+
+        result["pentagons_count"] = pentagons
+        result["hexagons_count"] = hexagons
+        result["materials"] = [mat_white.name, mat_black.name]
+
+    return result
 
 def edit_mesh(object_name: str, operation: str, distance: float = 0.001, **kwargs) -> Dict[str, Any]:
     """Apply topology cleanup, smoothing, or recalculation on object mesh."""

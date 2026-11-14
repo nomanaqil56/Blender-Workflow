@@ -17,7 +17,7 @@ def render_preview(output_filename: str = "preview.png", samples: int = 64,
 
     out_path = Path(output_filename)
     if not out_path.is_absolute():
-        out_path = RENDERS_DIR / output_filename
+        out_path = RENDERS_DIR / out_path.name
     out_path.parent.mkdir(parents=True, exist_ok=True)
     scene.render.filepath = str(out_path)
 
@@ -49,7 +49,7 @@ def capture_viewport(output_filename: str = "viewport_capture.png", **kwargs) ->
     """Capture viewport frame or OpenGL render."""
     out_path = Path(output_filename)
     if not out_path.is_absolute():
-        out_path = RENDERS_DIR / output_filename
+        out_path = RENDERS_DIR / out_path.name
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     old_filepath = bpy.context.scene.render.filepath

@@ -97,6 +97,19 @@ class ToolRegistry:
             }
         ))
         self.register(ToolDefinition(
+            name="clear_scene",
+            description="Remove all objects from the current scene (requires confirm=True).",
+            category="object",
+            is_destructive=True,
+            parameters_schema={
+                "type": "object",
+                "properties": {
+                    "confirm": {"type": "boolean", "description": "Explicit confirmation flag", "default": False}
+                },
+                "required": ["confirm"]
+            }
+        ))
+        self.register(ToolDefinition(
             name="select_object",
             description="Set the active and selected object in Blender.",
             category="object",

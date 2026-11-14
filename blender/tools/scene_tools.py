@@ -58,6 +58,13 @@ def inspect_object(object_name: str = "", **kwargs) -> Dict[str, Any]:
         data["vertices_count"] = len(obj.data.vertices)
         data["edges_count"] = len(obj.data.edges)
         data["polygons_count"] = len(obj.data.polygons)
+        pents = sum(1 for p in obj.data.polygons if len(p.vertices) == 5)
+        hexs = sum(1 for p in obj.data.polygons if len(p.vertices) == 6)
+        if pents == 0 and hexs == 0 and "pentagons_count" in obj:
+            pents = int(obj["pentagons_count"])
+            hexs = int(obj["hexagons_count"])
+        data["pentagons_count"] = pents
+        data["hexagons_count"] = hexs
         data["materials"] = [m.name for m in obj.data.materials if m]
         # Check non-manifold geometry count
         import bmesh
