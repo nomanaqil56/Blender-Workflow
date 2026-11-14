@@ -1,0 +1,14 @@
+{
+  "pentagons": 12,
+  "hexagons": 20,
+  "total_faces": 212,
+  "dimensions": [
+    2.055154323577881,
+    2.0812387466430664,
+    2.015631914138794
+  ],
+  "is_spherical": false,
+  "non_manifold_vertices": 0,
+  "non_manifold_edges": 0,
+  "is_manifold": true
+}

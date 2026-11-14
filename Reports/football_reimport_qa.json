@@ -1,0 +1,22 @@
+{
+  "status": "success",
+  "object_name": "Football_Mesh",
+  "vertex_count": 4858,
+  "edge_count": 12118,
+  "face_count": 7200,
+  "non_manifold_vertices": 111,
+  "non_manifold_edges": 2636,
+  "materials": [
+    "Mat_Football_White",
+    "Mat_Football_Black",
+    "Mat_Football_Seam"
+  ],
+  "materials_count": 3,
+  "has_uv_map": true,
+  "is_manifold": false,
+  "dimensions": [
+    1.9773513078689575,
+    1.9988884925842285,
+    1.9596712589263916
+  ]
+}

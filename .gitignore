@@ -10,4 +10,5 @@ Generation/Temporary/*
 
 # Logs & scratch
 *.log
-
+llama_stderr.txt
+llama_stdout.txt
