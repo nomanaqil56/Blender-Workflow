@@ -12,3 +12,5 @@ Generation/Temporary/*
 *.log
 llama_stderr.txt
 llama_stdout.txt
+archive/
+
