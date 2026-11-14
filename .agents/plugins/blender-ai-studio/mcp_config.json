@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "blender": {
+      "command": "python",
+      "args": [
+        "D:\\AI Local\\Blender AI Studio\\Core\\mcp_server.py"
+      ]
+    }
+  }
+}
+

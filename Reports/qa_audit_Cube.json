@@ -1,0 +1,34 @@
+{
+  "object_name": "Cube",
+  "vertex_count": 8,
+  "edge_count": 12,
+  "face_count": 6,
+  "non_manifold_vertices_count": 0,
+  "non_manifold_edges_count": 0,
+  "loose_vertices_count": 0,
+  "loose_edges_count": 0,
+  "zero_area_faces_count": 0,
+  "scale": [
+    1.0,
+    1.0,
+    1.0
+  ],
+  "is_scale_applied": true,
+  "dimensions": [
+    2.0,
+    2.0,
+    2.0
+  ],
+  "has_uv_map": true,
+  "uv_layers": [
+    "UVMap"
+  ],
+  "materials": [
+    "Material"
+  ],
+  "geometry_passed": true,
+  "uv_passed": true,
+  "materials_passed": true,
+  "overall_production_ready": true,
+  "timestamp": 1794638221.828108
+}

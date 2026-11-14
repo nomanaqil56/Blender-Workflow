@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.env
+
+# Blender session temporary cache
+Projects/_active_session.blend*
+Generation/Temporary/*
+
+# Logs & scratch
+*.log

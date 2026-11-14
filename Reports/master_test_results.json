@@ -1,0 +1,191 @@
+[
+  {
+    "test_id": "TEST 1",
+    "name": "Simple Object from Text",
+    "result": "SUCCESS",
+    "runtime_seconds": 13.56,
+    "vram_mb": {
+      "available": true,
+      "name": "NVIDIA GeForce RTX 5060 Laptop GPU",
+      "total_mb": 8151.0,
+      "used_mb": 0.0,
+      "free_mb": 7899.0,
+      "utilization_pct": 0.0,
+      "temp_c": 45.44
+    },
+    "output_files": [
+      "D:\\AI Local\\Blender AI Studio\\Exports\\Sleek_sci_fi_equipme_1794638282.glb"
+    ],
+    "errors": []
+  },
+  {
+    "test_id": "TEST 2",
+    "name": "Model from Reference Image",
+    "result": "SUCCESS",
+    "runtime_seconds": 14.92,
+    "vram_mb": {
+      "available": true,
+      "name": "NVIDIA GeForce RTX 5060 Laptop GPU",
+      "total_mb": 8151.0,
+      "used_mb": 0.0,
+      "free_mb": 7899.0,
+      "utilization_pct": 0.0,
+      "temp_c": 47.53
+    },
+    "output_files": [
+      "D:\\AI Local\\Blender AI Studio\\Exports\\Aerodynamic_concept_1794638297.glb",
+      "D:\\AI Local\\Blender AI Studio\\Generation\\Output\\multiview_vehicle.png"
+    ],
+    "errors": []
+  },
+  {
+    "test_id": "TEST 3",
+    "name": "Import and Refine Vehicle",
+    "result": "SUCCESS",
+    "runtime_seconds": 5.34,
+    "vram_mb": {
+      "available": true,
+      "name": "NVIDIA GeForce RTX 5060 Laptop GPU",
+      "total_mb": 8151.0,
+      "used_mb": 0.0,
+      "free_mb": 7899.0,
+      "utilization_pct": 0.0,
+      "temp_c": 47.91
+    },
+    "output_files": [
+      "D:\\AI Local\\Blender AI Studio\\Exports\\test3_refined_vehicle.glb"
+    ],
+    "errors": []
+  },
+  {
+    "test_id": "TEST 4",
+    "name": "Procedural Mechanical Object",
+    "result": "SUCCESS",
+    "runtime_seconds": 2.73,
+    "vram_mb": {
+      "available": true,
+      "name": "NVIDIA GeForce RTX 5060 Laptop GPU",
+      "total_mb": 8151.0,
+      "used_mb": 0.0,
+      "free_mb": 7899.0,
+      "utilization_pct": 0.0,
+      "temp_c": 48.12
+    },
+    "output_files": [],
+    "errors": []
+  },
+  {
+    "test_id": "TEST 5",
+    "name": "Generate and Apply PBR Material",
+    "result": "SUCCESS",
+    "runtime_seconds": 4.98,
+    "vram_mb": {
+      "available": true,
+      "name": "NVIDIA GeForce RTX 5060 Laptop GPU",
+      "total_mb": 8151.0,
+      "used_mb": 0.0,
+      "free_mb": 7899.0,
+      "utilization_pct": 0.0,
+      "temp_c": 48.59
+    },
+    "output_files": [
+      "D:\\AI Local\\Blender AI Studio\\Assets\\Textures\\AerospaceAlloy\\AerospaceAlloy_basecolor.png",
+      "D:\\AI Local\\Blender AI Studio\\Assets\\Textures\\AerospaceAlloy\\AerospaceAlloy_normal.png",
+      "D:\\AI Local\\Blender AI Studio\\Assets\\Textures\\AerospaceAlloy\\AerospaceAlloy_roughness.png",
+      "D:\\AI Local\\Blender AI Studio\\Assets\\Textures\\AerospaceAlloy\\AerospaceAlloy_metallic.png",
+      "D:\\AI Local\\Blender AI Studio\\Assets\\Textures\\AerospaceAlloy\\AerospaceAlloy_height.png"
+    ],
+    "errors": []
+  },
+  {
+    "test_id": "TEST 6",
+    "name": "Character & Armature Rigging",
+    "result": "SUCCESS",
+    "runtime_seconds": 2.72,
+    "vram_mb": {
+      "available": true,
+      "name": "NVIDIA GeForce RTX 5060 Laptop GPU",
+      "total_mb": 8151.0,
+      "used_mb": 0.0,
+      "free_mb": 7899.0,
+      "utilization_pct": 0.0,
+      "temp_c": 48.75
+    },
+    "output_files": [],
+    "errors": []
+  },
+  {
+    "test_id": "TEST 7",
+    "name": "Architectural Scene Construction",
+    "result": "SUCCESS",
+    "runtime_seconds": 2.8,
+    "vram_mb": {
+      "available": true,
+      "name": "NVIDIA GeForce RTX 5060 Laptop GPU",
+      "total_mb": 8151.0,
+      "used_mb": 0.0,
+      "free_mb": 7899.0,
+      "utilization_pct": 0.0,
+      "temp_c": 49.06
+    },
+    "output_files": [],
+    "errors": []
+  },
+  {
+    "test_id": "TEST 8",
+    "name": "Cycles OptiX Render & Inspection",
+    "result": "SUCCESS",
+    "runtime_seconds": 11.73,
+    "vram_mb": {
+      "available": true,
+      "name": "NVIDIA GeForce RTX 5060 Laptop GPU",
+      "total_mb": 8151.0,
+      "used_mb": 0.0,
+      "free_mb": 7899.0,
+      "utilization_pct": 0.0,
+      "temp_c": 51.56
+    },
+    "output_files": [
+      "D:\\AI Local\\Blender AI Studio\\Renders\\test8_master_render.png"
+    ],
+    "errors": []
+  },
+  {
+    "test_id": "TEST 9",
+    "name": "GLB Export & QA Verification",
+    "result": "SUCCESS",
+    "runtime_seconds": 5.41,
+    "vram_mb": {
+      "available": true,
+      "name": "NVIDIA GeForce RTX 5060 Laptop GPU",
+      "total_mb": 8151.0,
+      "used_mb": 0.0,
+      "free_mb": 7899.0,
+      "utilization_pct": 0.0,
+      "temp_c": 51.53
+    },
+    "output_files": [
+      "D:\\AI Local\\Blender AI Studio\\Exports\\test9_production_master.glb"
+    ],
+    "errors": []
+  },
+  {
+    "test_id": "TEST 10",
+    "name": "Offline Air-Gapped Autonomy",
+    "result": "SUCCESS",
+    "runtime_seconds": 14.63,
+    "vram_mb": {
+      "available": true,
+      "name": "NVIDIA GeForce RTX 5060 Laptop GPU",
+      "total_mb": 8151.0,
+      "used_mb": 0.0,
+      "free_mb": 7899.0,
+      "utilization_pct": 0.0,
+      "temp_c": 51.0
+    },
+    "output_files": [
+      "D:\\AI Local\\Blender AI Studio\\Exports\\Autonomous_rover_whe_1794638348.glb"
+    ],
+    "errors": []
+  }
+]

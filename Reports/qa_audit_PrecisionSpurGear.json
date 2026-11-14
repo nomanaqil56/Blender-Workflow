@@ -1,0 +1,32 @@
+{
+  "object_name": "PrecisionSpurGear",
+  "vertex_count": 160,
+  "edge_count": 320,
+  "face_count": 160,
+  "non_manifold_vertices_count": 0,
+  "non_manifold_edges_count": 0,
+  "loose_vertices_count": 0,
+  "loose_edges_count": 0,
+  "zero_area_faces_count": 0,
+  "scale": [
+    1.0,
+    1.0,
+    1.0
+  ],
+  "is_scale_applied": true,
+  "dimensions": [
+    3.4569091796875,
+    3.4569091796875,
+    0.5
+  ],
+  "has_uv_map": false,
+  "uv_layers": [],
+  "materials": [
+    "AerospaceAlloy"
+  ],
+  "geometry_passed": true,
+  "uv_passed": false,
+  "materials_passed": true,
+  "overall_production_ready": false,
+  "timestamp": 1794638335.4834344
+}
